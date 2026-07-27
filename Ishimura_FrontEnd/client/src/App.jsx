@@ -1,0 +1,75 @@
+import "./App.css";
+import MarcasPage from "./components/MarcasPage";
+import Home from "./views/Home";
+import Contact from "./views/Contact";
+import Carrito from "./views/Carrito";
+import Wishlist from "./views/Wishlist";
+import ConfirmarCompra from "./views/ConfirmarCompra";
+import MisCompras from "./views/MisCompras";
+import NavBar from "./components/NavBar";
+import ColeccionableDestacado from "./components/ColeccionableDestacado";
+import Login from "./views/Login";
+import Register from "./views/Register";
+import ForgotPassword from "./views/ForgotPassword";
+import HomeCarousel from "./components/HomeCarousel";
+import DetalleColeccionable from "./views/DetalleColeccionable";
+import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import CrearColeccionable from "./views/CrearColeccionable";
+import Footer from './components/Footer'
+import Coleccionables from "./views/Coleccionables";
+import NewArrivals from "./views/NewArrivals";
+import AdminPanel from "./views/AdminPanel";
+import Promotions from "./views/Promotions";
+import AdminCompras from "./views/AdminCompras";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
+function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = () => {
+    navigate("/home");
+  };
+
+  const RequireAdmin = ({ children }) => {
+    const role = useSelector((s) => s.login.role);
+    const ok = role === 'ADMIN';
+    return ok ? children : <Navigate to="/home" replace />;
+  };
+
+  return (
+    <>
+      <NavBar />
+      <ToastContainer position="top-right" autoClose={2000} />
+      {/*<Navigation/>*/}
+      <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/coleccionable/:id" element={<DetalleColeccionable />} />
+        <Route path="/marcas" element={<MarcasPage />} />
+        <Route path="/coleccionables" element={<Coleccionables />} />
+        <Route path="/new-arrivals" element={<NewArrivals />} />
+        <Route path="/sales" element={<Promotions />} />
+        <Route path="/carrito" element={<Carrito />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/confirmar-compra" element={<ConfirmarCompra />} />
+        <Route path="/mis-compras" element={<MisCompras />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/crear-coleccionable" element={<RequireAdmin><CrearColeccionable /></RequireAdmin>} />
+        <Route path="/admin" element={<RequireAdmin> <AdminPanel /> </RequireAdmin>} />
+        <Route path="/admin/compras" element={<RequireAdmin><AdminCompras /></RequireAdmin>} />
+        <Route path="*" element={<div className="p-8">404 - Not found</div>} />
+        <Route path="/carrito" element={<Carrito />} />
+      </Routes>
+      <Footer />
+    </>
+  );
+}
+
+export default App;

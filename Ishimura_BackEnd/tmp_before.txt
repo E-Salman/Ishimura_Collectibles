@@ -1,0 +1,68 @@
+package Ishimura.uade.IshimuraCollectibles.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import Ishimura.uade.IshimuraCollectibles.entity.Coleccionable;
+import Ishimura.uade.IshimuraCollectibles.entity.ItemWishlist;
+import Ishimura.uade.IshimuraCollectibles.entity.Usuario;
+import Ishimura.uade.IshimuraCollectibles.entity.dto.WishlistItemDTO;
+import Ishimura.uade.IshimuraCollectibles.repository.ColeccionableRepository;
+import Ishimura.uade.IshimuraCollectibles.repository.ItemWishlistRepository;
+
+@Service
+public class WishlistService {
+
+    @Autowired
+    private ItemWishlistRepository wishlistRepo;
+
+    @Autowired
+    private ColeccionableRepository coleccionableRepo;
+
+    public List<WishlistItemDTO> obtenerWishlist(Long usuarioId) {
+        List<ItemWishlist> items = wishlistRepo.findByUsuarioId(usuarioId);
+
+        return items.stream()
+                .map(i -> {
+                    Coleccionable c = i.getColeccionable();
+                    String imagen = (c.getImagenes() != null && !c.getImagenes().isEmpty())
+                            ? "http://localhost:4002/imagenes?id=" + c.getImagenes().get(0).getId()
+                            : null;
+
+                    return new WishlistItemDTO(
+                            i.getId(),
+                            c.getId(),
+                            c.getNombre(),
+                            c.getPrecio(),
+                            imagen
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public ItemWishlist agregarAWishlist(Usuario usuario, Long coleccionableId) {
+        boolean existe = wishlistRepo.existsByUsuarioIdAndColeccionableId(usuario.getId(), coleccionableId);
+        if (existe) throw new RuntimeException("El coleccionable ya está en la wishlist");
+
+        Coleccionable coleccionable = coleccionableRepo.findById(coleccionableId)
+                .orElseThrow(() -> new RuntimeException("Coleccionable no encontrado"));
+
+        ItemWishlist item = new ItemWishlist();
+        item.setUsuario(usuario);
+        item.setColeccionable(coleccionable);
+
+        return wishlistRepo.save(item);
+    }
+
+    public void eliminarItem(Long id) {
+        wishlistRepo.deleteById(id);
+    }
+
+    public void vaciarWishlist(Long usuarioId) {
+        List<ItemWishlist> items = wishlistRepo.findByUsuarioId(usuarioId);
+        wishlistRepo.deleteAll(items);
+    }
+}
